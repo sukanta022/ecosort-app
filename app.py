@@ -1,6 +1,10 @@
+import os
+os.environ["KERAS_BACKEND"] = "tensorflow"
 import streamlit as st
 import numpy as np
-import tensorflow as tf
+import keras
+from keras.models import load_model
+from keras.preprocessing import image
 import cv2
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -19,9 +23,8 @@ MODEL_PATH  = 'model/ecosort_model.h5'
 
 # ── Load Model (cache করা হবে, বারবার load হবে না) ──
 @st.cache_resource
-def load_model():
-    model = tf.keras.models.load_model(MODEL_PATH)
-    return model
+def load_model_file():
+    return keras.models.load_model(MODEL_PATH)
 
 # ── Grad-CAM Function ──
 def get_gradcam(model, img_array, layer_name='Conv_1'):

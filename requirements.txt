@@ -1,5 +1,6 @@
 streamlit
-tensorflow-cpu==2.15.1
+keras
+tf-keras
 numpy
 opencv-python-headless
 matplotlib
