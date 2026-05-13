@@ -1,6 +1,5 @@
 streamlit
-keras
-tf-keras
+onnxruntime
 numpy
 opencv-python-headless
 matplotlib
