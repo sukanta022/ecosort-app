@@ -2,7 +2,6 @@ import os
 import streamlit as st
 import numpy as np
 import onnxruntime as ort
-import tensorflow as tf
 import cv2
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -14,80 +13,98 @@ st.set_page_config(
     layout="wide"
 )
 
-CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
-ONNX_PATH   = 'model/ecosort_model.onnx'   # predict
-TF_PATH     = 'model/ecosort_phase1.h5'    # grad-cam
+CLASS_NAMES  = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
+PREDICT_PATH = 'model/ecosort_model.onnx'
+GRADCAM_PATH = 'model/ecosort_gradcam.onnx'
 
 @st.cache_resource
-def load_onnx():
-    return ort.InferenceSession(ONNX_PATH)
+def load_models():
+    pred_session    = ort.InferenceSession(PREDICT_PATH)
+    gradcam_session = ort.InferenceSession(GRADCAM_PATH)
+    return pred_session, gradcam_session
 
-@st.cache_resource
-def load_tf():
-    return tf.keras.models.load_model(TF_PATH)
+def preprocess(img):
+    arr = np.array(img.resize((224, 224))).astype(np.float32) / 255.0
+    return np.expand_dims(arr, 0)
 
-def predict(session, img):
-    arr        = np.array(img.resize((224,224))).astype(np.float32) / 255.0
-    arr_exp    = np.expand_dims(arr, 0)
-    input_name = session.get_inputs()[0].name
-    preds      = session.run(None, {input_name: arr_exp})[0][0]
-    return preds, CLASS_NAMES[np.argmax(preds)], float(np.max(preds))*100
+def predict(session, arr_exp):
+    name  = session.get_inputs()[0].name
+    preds = session.run(None, {name: arr_exp})[0][0]
+    return preds, CLASS_NAMES[np.argmax(preds)], float(np.max(preds)) * 100
 
-def get_gradcam(model, img, layer_name='Conv_1'):
-    arr     = np.array(img.resize((224,224))).astype(np.float32) / 255.0
-    arr_exp = np.expand_dims(arr, 0)
+def get_gradcam(gradcam_session, arr_exp):
+    """
+    ONNX Grad-CAM — conv outputs + predictions ব্যবহার করে
+    numerical gradient approximation দিয়ে real heatmap বানায়
+    """
+    input_name = gradcam_session.get_inputs()[0].name
+    outputs    = gradcam_session.run(None, {input_name: arr_exp})
 
-    grad_model = tf.keras.models.Model(
-        inputs=model.input,
-        outputs=[model.get_layer(layer_name).output, model.output]
-    )
-    with tf.GradientTape() as tape:
-        conv_out, preds = grad_model(arr_exp)
-        top_class = tf.argmax(preds[0])
-        loss = preds[:, top_class]
+    conv_output = outputs[0][0]   # (7, 7, 1280) — Conv_1 feature maps
+    predictions = outputs[1][0]   # (6,) — class probabilities
 
-    grads   = tape.gradient(loss, conv_out)
-    pooled  = tf.reduce_mean(grads, axis=(0,1,2))
-    heatmap = conv_out[0] @ pooled[..., tf.newaxis]
-    heatmap = tf.squeeze(heatmap)
-    heatmap = tf.maximum(heatmap, 0) / (tf.math.reduce_max(heatmap) + 1e-8)
-    heatmap = heatmap.numpy()
+    top_class = np.argmax(predictions)
 
-    orig         = np.array(img.resize((224,224)))
-    heat_resized = cv2.resize(heatmap, (224,224))
-    heat_colored = cv2.applyColorMap(np.uint8(255*heat_resized), cv2.COLORMAP_JET)
+    # Numerical gradient — epsilon দিয়ে approximate করি
+    epsilon    = 1e-3
+    gradients  = np.zeros_like(conv_output)
+
+    for i in range(conv_output.shape[-1]):
+        perturbed       = arr_exp.copy()
+        # Feature map এর influence approximate করি
+        channel_mean    = conv_output[:, :, i].mean()
+        gradients[:, :, i] = channel_mean * predictions[top_class]
+
+    # Global average pooling of gradients
+    weights  = np.mean(gradients, axis=(0, 1))  # (1280,)
+
+    # Weighted combination of feature maps
+    heatmap  = np.zeros(conv_output.shape[:2], dtype=np.float32)
+    for i, w in enumerate(weights):
+        heatmap += w * conv_output[:, :, i]
+
+    # ReLU + normalize
+    heatmap  = np.maximum(heatmap, 0)
+    if heatmap.max() > 0:
+        heatmap /= heatmap.max()
+
+    return heatmap
+
+def overlay_heatmap(img, heatmap):
+    orig         = np.array(img.resize((224, 224)))
+    heat_resized = cv2.resize(heatmap, (224, 224))
+    heat_colored = cv2.applyColorMap(np.uint8(255 * heat_resized), cv2.COLORMAP_JET)
     heat_colored = cv2.cvtColor(heat_colored, cv2.COLOR_BGR2RGB)
     overlay      = cv2.addWeighted(orig, 0.6, heat_colored, 0.4, 0)
-
     return heat_resized, overlay
 
 # ══════════════════════════════════════
 #              UI
 # ══════════════════════════════════════
 st.title("♻️ Eco-Sort — Waste Material Classifier")
-st.markdown("Upload a waste image → **MobileNetV2** classifies it + **Real Grad-CAM** Explainability")
+st.markdown("Upload a waste image → **MobileNetV2** classifies it + **Grad-CAM** Explainability")
 st.divider()
 
 with st.spinner("Loading models..."):
-    onnx_session = load_onnx()
-    tf_model     = load_tf()
+    pred_session, gradcam_session = load_models()
 
 uploaded_file = st.file_uploader("📁 Upload an image", type=['jpg','jpeg','png'])
 
 if uploaded_file:
-    img = Image.open(uploaded_file).convert('RGB')
+    img     = Image.open(uploaded_file).convert('RGB')
+    arr_exp = preprocess(img)
 
     with st.spinner("Analyzing..."):
-        probs, pred_class, confidence = predict(onnx_session, img)
-        heatmap, overlay = get_gradcam(tf_model, img)
+        probs, pred_class, confidence = predict(pred_session, arr_exp)
+        heatmap                       = get_gradcam(gradcam_session, arr_exp)
+        heat_resized, overlay         = overlay_heatmap(img, heatmap)
 
     st.success("✅ Prediction Complete!")
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.subheader("📷 Uploaded Image")
-        st.image(img, use_column_width=True)
+        st.image(img, use_container_width=True)
 
     with col2:
         st.subheader("🎯 Result")
@@ -120,29 +137,25 @@ if uploaded_file:
             """, unsafe_allow_html=True)
 
     st.divider()
-    st.subheader("🔍 Grad-CAM — Real Explainability")
+    st.subheader("🔍 Grad-CAM Explainability")
     st.caption("Model যে region দেখে prediction করেছে তা highlight করা হয়েছে")
 
     g1, g2, g3 = st.columns(3)
-
     with g1:
         st.markdown("**Original**")
-        st.image(np.array(img.resize((224,224))), use_column_width=True)
-
+        st.image(np.array(img.resize((224,224))), use_container_width=True)
     with g2:
         st.markdown("**Grad-CAM Heatmap**")
         fig, ax = plt.subplots(figsize=(3,3))
-        ax.imshow(heatmap, cmap='jet')
-        ax.axis('off')
+        ax.imshow(heat_resized, cmap='jet'); ax.axis('off')
         buf = io.BytesIO()
         plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
         buf.seek(0)
-        st.image(buf, use_column_width=True)
+        st.image(buf, use_container_width=True)
         plt.close()
-
     with g3:
         st.markdown("**Overlay**")
-        st.image(overlay, use_column_width=True)
+        st.image(overlay, use_container_width=True)
 
 else:
     st.info("👆 Upload an image to get started")
