@@ -137,9 +137,8 @@ if uploaded_file:
             """, unsafe_allow_html=True)
 
     st.divider()
-    st.subheader("🔍 Grad-CAM Explainability")
-    st.caption("Model যে region দেখে prediction করেছে তা highlight করা হয়েছে")
-
+    st.subheader("Grad-CAM Explainability")
+    
     g1, g2, g3 = st.columns(3)
     with g1:
         st.markdown("**Original**")
