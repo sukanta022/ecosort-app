@@ -15,107 +15,63 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Theme & Global CSS ──
+# ── Global CSS ──
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── Base reset ── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-[data-theme="dark"] {
-    --bg:        #0d0f12;
-    --bg2:       #141720;
-    --bg3:       #1c2030;
-    --border:    rgba(255,255,255,0.07);
-    --text:      #e8eaf0;
-    --muted:     #7a8099;
-    --accent:    #3ddc84;
-    --accent2:   #00b4d8;
-    --danger:    #ff6b6b;
-    --card:      #141720;
-    --sidebar:   #0f1117;
-    --tag-bg:    rgba(61,220,132,0.12);
-    --tag-text:  #3ddc84;
-    --shadow:    0 4px 24px rgba(0,0,0,0.5);
-}
-[data-theme="light"] {
-    --bg:        #f4f6f9;
-    --bg2:       #ffffff;
-    --bg3:       #eef1f6;
-    --border:    rgba(0,0,0,0.08);
-    --text:      #1a1d2e;
-    --muted:     #6b7280;
-    --accent:    #16a34a;
-    --accent2:   #0284c7;
-    --danger:    #dc2626;
-    --card:      #ffffff;
-    --sidebar:   #ffffff;
-    --tag-bg:    rgba(22,163,74,0.10);
-    --tag-text:  #16a34a;
-    --shadow:    0 4px 24px rgba(0,0,0,0.08);
-}
-
-/* Apply theme to Streamlit root */
-.stApp {
-    background: var(--bg) !important;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text) !important;
-}
 
 /* Hide Streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding: 0 !important; max-width: 100% !important; }
 section[data-testid="stSidebar"] > div { padding: 0 !important; }
 
-/* ── Sidebar ── */
+/* Sidebar */
 section[data-testid="stSidebar"] {
-    background: var(--sidebar) !important;
-    border-right: 1px solid var(--border) !important;
     min-width: 240px !important;
     max-width: 240px !important;
 }
 section[data-testid="stSidebar"] * {
     font-family: 'DM Sans', sans-serif !important;
-    color: var(--text) !important;
 }
 
-/* ── Upload area ── */
+/* Upload area */
 [data-testid="stFileUploader"] {
-    background: var(--bg3) !important;
-    border: 2px dashed var(--border) !important;
     border-radius: 16px !important;
     padding: 8px !important;
 }
-[data-testid="stFileUploader"]:hover {
-    border-color: var(--accent) !important;
-}
-[data-testid="stFileUploadDropzone"] {
-    background: transparent !important;
-}
 
-/* ── Buttons ── */
+/* Buttons — force text color to white always */
 .stButton > button {
-    background: var(--accent) !important;
-    color: #fff !important;
     border: none !important;
     border-radius: 10px !important;
     font-family: 'DM Sans', sans-serif !important;
     font-weight: 500 !important;
     padding: 10px 24px !important;
     transition: opacity 0.2s !important;
+    color: #ffffff !important;
 }
 .stButton > button:hover { opacity: 0.85 !important; }
+.stButton > button * { color: #ffffff !important; }
 
-/* ── Spinner ── */
-.stSpinner > div { border-top-color: var(--accent) !important; }
+/* Spinner */
+.stSpinner > div { border-top-color: #3ddc84 !important; }
 
-/* ── Images ── */
+/* Images */
 [data-testid="stImage"] img { border-radius: 12px !important; }
 
-/* ── Scrollbar ── */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb { border-radius: 10px; }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    section[data-testid="stSidebar"] {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -137,6 +93,14 @@ CLASS_ICONS = {
     'cardboard':'📦','glass':'🫙','metal':'🔩','paper':'📄','plastic':'🧴','trash':'🗑️'
 }
 
+LANE_INFO = {
+    'Lane 1': {'items': 'Cardboard / Paper', 'classes': ['cardboard', 'paper']},
+    'Lane 2': {'items': 'Glass',             'classes': ['glass']},
+    'Lane 3': {'items': 'Metal',             'classes': ['metal']},
+    'Lane 4': {'items': 'Plastic',           'classes': ['plastic']},
+    'Lane 5': {'items': 'Trash',             'classes': ['trash']},
+}
+
 # ── Session state ──
 if 'theme' not in st.session_state:
     st.session_state.theme = 'dark'
@@ -147,43 +111,60 @@ if 'history' not in st.session_state:
 
 theme = st.session_state.theme
 
-# Inject theme variable
-st.markdown(f'<div id="theme-root" data-theme="{theme}" style="display:none"></div>', unsafe_allow_html=True)
-st.markdown(f"""
-<script>
-document.documentElement.setAttribute('data-theme', '{theme}');
-document.body.setAttribute('data-theme', '{theme}');
-var root = document.querySelector('.stApp');
-if(root) root.setAttribute('data-theme', '{theme}');
-</script>
-""", unsafe_allow_html=True)
+# ── Theme colors ──
+if theme == 'dark':
+    bg       = '#0d0f12'
+    bg2      = '#141720'
+    bg3      = '#1c2030'
+    border   = 'rgba(255,255,255,0.07)'
+    text     = '#e8eaf0'
+    muted    = '#7a8099'
+    accent   = '#3ddc84'
+    accent2  = '#00b4d8'
+    card     = '#141720'
+    sidebar  = '#0f1117'
+    tag_bg   = 'rgba(61,220,132,0.12)'
+    tag_text = '#3ddc84'
+    shadow   = '0 4px 24px rgba(0,0,0,0.5)'
+else:
+    bg       = '#f4f6f9'
+    bg2      = '#ffffff'
+    bg3      = '#eef1f6'
+    border   = 'rgba(0,0,0,0.08)'
+    text     = '#1a1d2e'
+    muted    = '#6b7280'
+    accent   = '#16a34a'
+    accent2  = '#0284c7'
+    card     = '#ffffff'
+    sidebar  = '#ffffff'
+    tag_bg   = 'rgba(22,163,74,0.10)'
+    tag_text = '#16a34a'
+    shadow   = '0 4px 24px rgba(0,0,0,0.08)'
 
-# Force CSS variables via inline injection
-bg        = '#0d0f12'   if theme=='dark' else '#f4f6f9'
-bg2       = '#141720'   if theme=='dark' else '#ffffff'
-bg3       = '#1c2030'   if theme=='dark' else '#eef1f6'
-border    = 'rgba(255,255,255,0.07)' if theme=='dark' else 'rgba(0,0,0,0.08)'
-text      = '#e8eaf0'   if theme=='dark' else '#1a1d2e'
-muted     = '#7a8099'   if theme=='dark' else '#6b7280'
-accent    = '#3ddc84'   if theme=='dark' else '#16a34a'
-accent2   = '#00b4d8'   if theme=='dark' else '#0284c7'
-card      = '#141720'   if theme=='dark' else '#ffffff'
-sidebar   = '#0f1117'   if theme=='dark' else '#ffffff'
-tag_bg    = 'rgba(61,220,132,0.12)' if theme=='dark' else 'rgba(22,163,74,0.10)'
-tag_text  = '#3ddc84'   if theme=='dark' else '#16a34a'
-shadow    = '0 4px 24px rgba(0,0,0,0.5)' if theme=='dark' else '0 4px 24px rgba(0,0,0,0.08)'
-
+# Inject theme-aware styles
 st.markdown(f"""
 <style>
-.stApp, section[data-testid="stSidebar"] {{
-    --bg:{bg}; --bg2:{bg2}; --bg3:{bg3}; --border:{border};
-    --text:{text}; --muted:{muted}; --accent:{accent}; --accent2:{accent2};
-    --card:{card}; --sidebar:{sidebar}; --tag-bg:{tag_bg}; --tag-text:{tag_text};
-    --shadow:{shadow};
+.stApp {{
     background: {bg} !important;
+    font-family: 'DM Sans', sans-serif;
     color: {text} !important;
 }}
-section[data-testid="stSidebar"] {{ background: {sidebar} !important; }}
+section[data-testid="stSidebar"] {{
+    background: {sidebar} !important;
+    border-right: 1px solid {border} !important;
+}}
+section[data-testid="stSidebar"] * {{
+    color: {text} !important;
+}}
+[data-testid="stFileUploader"] {{
+    background: {bg3} !important;
+    border: 2px dashed {border} !important;
+}}
+.stButton > button {{
+    background: {accent} !important;
+    color: #ffffff !important;
+}}
+::-webkit-scrollbar-thumb {{ background: {border}; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -235,7 +216,7 @@ with st.sidebar:
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
             <div style="width:34px;height:34px;background:{accent};border-radius:10px;
                         display:flex;align-items:center;justify-content:center;
-                        font-size:18px;flex-shrink:0;">♻</div>
+                        font-size:18px;flex-shrink:0;color:#fff;">♻</div>
             <div>
                 <div style="font-size:17px;font-weight:600;color:{text};letter-spacing:-0.3px;">Eco-Sort</div>
                 <div style="font-size:11px;color:{muted};font-family:'DM Mono',monospace;">v1.0 · Smart Waste AI</div>
@@ -245,19 +226,12 @@ with st.sidebar:
     <div style="height:1px;background:{border};margin:0 20px 16px;"></div>
     """, unsafe_allow_html=True)
 
-    # Navigation
-    pages = [
-        ('Home',             '⬜', 'Overview & stats'),
-        ('Waste Identification', '🔍', 'Classify & analyze'),
-    ]
-
     st.markdown(f'<div style="padding:0 12px;"><div style="font-size:10px;font-weight:600;color:{muted};letter-spacing:1.5px;text-transform:uppercase;padding:0 8px 8px;">Navigation</div></div>', unsafe_allow_html=True)
 
-    for pname, icon, desc in pages:
+    pages = ['Home', 'Waste Identification']
+    for pname in pages:
         active = st.session_state.page == pname
-        abg    = tag_bg  if active else 'transparent'
-        acol   = accent  if active else muted
-        if st.sidebar.button(f"{pname}", key=f"nav_{pname}", use_container_width=True):
+        if st.sidebar.button(pname, key=f"nav_{pname}", use_container_width=True):
             st.session_state.page = pname
             st.rerun()
 
@@ -299,28 +273,24 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # Theme toggle at bottom
-    st.markdown('<div style="flex:1"></div>', unsafe_allow_html=True)
     st.markdown(f'<div style="height:1px;background:{border};margin:8px 20px 16px;"></div>', unsafe_allow_html=True)
     col_t1, col_t2 = st.columns([1,1])
     with col_t1:
-        if st.button("☀ Light" if theme=='dark' else "☀ Light", key="light_btn", use_container_width=True):
+        if st.button("☀ Light", key="light_btn", use_container_width=True):
             st.session_state.theme = 'light'
             st.rerun()
     with col_t2:
-        if st.button("◑ Dark" if theme=='light' else "◑ Dark", key="dark_btn", use_container_width=True):
+        if st.button("◑ Dark", key="dark_btn", use_container_width=True):
             st.session_state.theme = 'dark'
             st.rerun()
 
 # ── Main content ──
-main = st.container()
-
-with main:
-    # ── Topbar ──
+with st.container():
+    # Topbar
     st.markdown(f"""
     <div style="background:{bg2};border-bottom:1px solid {border};
                 padding:16px 32px;display:flex;align-items:center;
-                justify-content:space-between;position:sticky;top:0;z-index:100;">
+                justify-content:space-between;">
         <div>
             <div style="font-size:20px;font-weight:600;color:{text};letter-spacing:-0.4px;">
                 {st.session_state.page}
@@ -329,11 +299,9 @@ with main:
                 {"Overview of your waste management AI system" if st.session_state.page=="Home" else "Upload and classify waste images with AI"}
             </div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-            <div style="background:{tag_bg};color:{tag_text};font-size:11px;font-weight:500;
-                        padding:4px 12px;border-radius:20px;font-family:'DM Mono',monospace;">
-                MobileNetV2 · 86.77%
-            </div>
+        <div style="background:{tag_bg};color:{tag_text};font-size:11px;font-weight:500;
+                    padding:4px 12px;border-radius:20px;font-family:'DM Mono',monospace;">
+            MobileNetV2 · 86.77%
         </div>
     </div>
     <div style="padding:28px 32px;">
@@ -344,42 +312,67 @@ with main:
     # ════════════════════════════════════════
     if st.session_state.page == 'Home':
 
+        # ── Model title + overview from docx ──
+        st.markdown(f"""
+        <div style="background:{card};border:1px solid {border};border-radius:16px;
+                    padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;
+                        background:linear-gradient(90deg,{accent},{accent2});border-radius:16px 16px 0 0;"></div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+                <div style="width:48px;height:48px;background:{tag_bg};border-radius:12px;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:22px;flex-shrink:0;">♻️</div>
+                <div style="flex:1;">
+                    <div style="font-size:18px;font-weight:600;color:{text};margin-bottom:4px;letter-spacing:-0.3px;">
+                        Eco-Sort — Automated Waste Classification & Intelligent Sorting System
+                    </div>
+                    <div style="font-size:12px;color:{muted};margin-bottom:12px;font-family:'DM Mono',monospace;">
+                        MobileNetV2 Transfer Learning · Grad-CAM Explainability · Rule-based Sorting Controller
+                    </div>
+                    <div style="font-size:13px;color:{muted};line-height:1.7;max-width:860px;">
+                        Eco-Sort is a deep learning-based waste classification system that identifies waste images 
+                        across six categories — <strong style="color:{text};">Cardboard, Glass, Metal, Paper, Plastic,</strong> and 
+                        <strong style="color:{text};">Trash</strong> — using Transfer Learning on MobileNetV2 pre-trained with ImageNet weights. 
+                        Each prediction is paired with a <strong style="color:{text};">Grad-CAM heatmap</strong> for visual explainability 
+                        and an <strong style="color:{text};">automated sorting decision</strong> that maps the classified item to a designated 
+                        bin, conveyor lane, processing action, and destination facility — simulating a real-world 
+                        intelligent waste management pipeline. The Phase 1 model achieves <strong style="color:{accent};">86.77% test accuracy</strong> 
+                        on 431 held-out samples.
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Stat cards
         stats = [
-            ('86.77%',  'Test Accuracy',       accent,  'MobileNetV2 Phase 1'),
-            ('6',       'Waste Classes',        accent2, 'Cardboard to Trash'),
-            ('431',     'Test Samples',         '#a78bfa','Evaluation dataset'),
-            ('0.85',    'F1-Score',             '#fb923c','Weighted average'),
+            ('86.77%', 'Test Accuracy',  accent,   'MobileNetV2 Phase 1'),
+            ('6',      'Waste Classes',  accent2,  'Cardboard to Trash'),
+            ('431',    'Test Samples',   '#a78bfa', 'Evaluation dataset'),
+            ('0.85',   'F1-Score',       '#fb923c', 'Weighted average'),
         ]
         cols = st.columns(4)
         for i,(val,label,color,sub) in enumerate(stats):
             with cols[i]:
                 st.markdown(f"""
                 <div style="background:{card};border:1px solid {border};border-radius:16px;
-                            padding:20px;position:relative;overflow:hidden;">
+                            padding:20px;position:relative;overflow:hidden;margin-bottom:24px;">
                     <div style="position:absolute;top:0;left:0;right:0;height:3px;
                                 background:{color};border-radius:16px 16px 0 0;"></div>
                     <div style="font-size:28px;font-weight:600;color:{text};
-                                font-family:'DM Mono',monospace;letter-spacing:-1px;
-                                margin-bottom:4px;">{val}</div>
+                                font-family:'DM Mono',monospace;letter-spacing:-1px;margin-bottom:4px;">{val}</div>
                     <div style="font-size:13px;font-weight:500;color:{text};margin-bottom:2px;">{label}</div>
                     <div style="font-size:11px;color:{muted};">{sub}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
-        st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
-
-        # Class performance grid
         col_a, col_b = st.columns([3,2])
 
         with col_a:
             st.markdown(f"""
             <div style="background:{card};border:1px solid {border};border-radius:16px;padding:22px;">
-                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">
-                    Class Performance
-                </div>
+                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">Class Performance</div>
             """, unsafe_allow_html=True)
-
             perf = [
                 ('cardboard', 0.93, '#92713a'),
                 ('paper',     0.91, '#5a8a5a'),
@@ -397,8 +390,7 @@ with main:
                         <span style="font-size:12px;color:{muted};font-family:'DM Mono',monospace;">F1: {score}</span>
                     </div>
                     <div style="background:{bg3};border-radius:6px;height:7px;overflow:hidden;">
-                        <div style="width:{pct}%;height:100%;background:{color};
-                                    border-radius:6px;transition:width 0.8s ease;"></div>
+                        <div style="width:{pct}%;height:100%;background:{color};border-radius:6px;"></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -406,14 +398,11 @@ with main:
 
         with col_b:
             st.markdown(f"""
-            <div style="background:{card};border:1px solid {border};border-radius:16px;padding:22px;height:100%;">
-                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">
-                    Sorting Lanes
-                </div>
+            <div style="background:{card};border:1px solid {border};border-radius:16px;padding:22px;">
+                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">Sorting Lanes</div>
             """, unsafe_allow_html=True)
-
             lanes = [
-                ('Lane 1','Cardboard, Paper','#5a8a5a'),
+                ('Lane 1','Cardboard / Paper','#5a8a5a'),
                 ('Lane 2','Glass','#3a7abf'),
                 ('Lane 3','Metal','#5a6a7a'),
                 ('Lane 4','Plastic','#c4832a'),
@@ -421,10 +410,9 @@ with main:
             ]
             for lane, items, color in lanes:
                 st.markdown(f"""
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;
                             background:{bg3};border-radius:10px;padding:10px 14px;">
-                    <div style="width:8px;height:8px;border-radius:50%;
-                                background:{color};flex-shrink:0;"></div>
+                    <div style="width:8px;height:8px;border-radius:50%;background:{color};flex-shrink:0;"></div>
                     <div>
                         <div style="font-size:12px;font-weight:500;color:{text};">{lane}</div>
                         <div style="font-size:11px;color:{muted};">{items}</div>
@@ -438,9 +426,7 @@ with main:
         # Recent history
         st.markdown(f"""
         <div style="background:{card};border:1px solid {border};border-radius:16px;padding:22px;">
-            <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">
-                Recent Classifications
-            </div>
+            <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:16px;">Recent Classifications</div>
         """, unsafe_allow_html=True)
 
         if not st.session_state.history:
@@ -457,7 +443,7 @@ with main:
                         letter-spacing:0.8px;text-transform:uppercase;
                         padding:0 0 10px;border-bottom:1px solid {border};margin-bottom:8px;">
                 <span>#</span><span>Class</span><span>Confidence</span>
-                <span>Bin</span><span>Recyclable</span>
+                <span>Bin</span><span>Type</span>
             </div>
             """, unsafe_allow_html=True)
             for i, h in enumerate(reversed(st.session_state.history[-8:])):
@@ -477,7 +463,6 @@ with main:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Quick access button
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
         if st.button("Go to Waste Identification →", use_container_width=False):
             st.session_state.page = 'Waste Identification'
@@ -491,7 +476,7 @@ with main:
         try:
             pred_sess, gcam_sess = load_models()
             models_ready = True
-        except Exception as e:
+        except Exception:
             models_ready = False
             st.markdown(f"""
             <div style="background:rgba(176,64,64,0.12);border:1px solid #b04040;border-radius:12px;
@@ -504,16 +489,11 @@ with main:
         left_col, right_col = st.columns([1, 1], gap="large")
 
         with left_col:
-            # Upload section
             st.markdown(f"""
             <div style="background:{card};border:1px solid {border};border-radius:16px;
                         padding:22px;margin-bottom:20px;">
-                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:4px;">
-                    Upload Image
-                </div>
-                <div style="font-size:12px;color:{muted};margin-bottom:16px;">
-                    Supports JPG, JPEG, PNG
-                </div>
+                <div style="font-size:15px;font-weight:600;color:{text};margin-bottom:4px;">Upload Image</div>
+                <div style="font-size:12px;color:{muted};margin-bottom:16px;">Supports JPG, JPEG, PNG</div>
             """, unsafe_allow_html=True)
 
             uploaded = st.file_uploader("", type=['jpg','jpeg','png'], label_visibility="collapsed")
@@ -522,11 +502,8 @@ with main:
             if uploaded:
                 img = Image.open(uploaded).convert('RGB')
                 st.markdown(f"""
-                <div style="background:{card};border:1px solid {border};border-radius:16px;
-                            padding:22px;">
-                    <div style="font-size:13px;font-weight:500;color:{muted};margin-bottom:12px;">
-                        Preview
-                    </div>
+                <div style="background:{card};border:1px solid {border};border-radius:16px;padding:22px;">
+                    <div style="font-size:13px;font-weight:500;color:{muted};margin-bottom:12px;">Preview</div>
                 """, unsafe_allow_html=True)
                 st.image(img, use_container_width=True)
                 st.markdown(f"""
@@ -545,21 +522,20 @@ with main:
 
                 with st.spinner("Analyzing..."):
                     probs, pred_cls, conf = predict(pred_sess, arr)
-                    heatmap              = get_gradcam(gcam_sess, arr)
-                    heat_res, ov         = overlay(img, heatmap)
+                    heatmap               = get_gradcam(gcam_sess, arr)
+                    heat_res, ov          = overlay(img, heatmap)
                     time.sleep(0.3)
 
-                # Save to history
                 st.session_state.history.append({'cls':pred_cls,'conf':conf})
 
                 sort = SORTING[pred_cls]
                 icon = CLASS_ICONS.get(pred_cls,'♻️')
                 rec_color = accent if sort['type']=='Recyclable' else '#b04040'
 
-                # ── Result card ──
+                # ── Classification result ──
                 st.markdown(f"""
                 <div style="background:{card};border:1px solid {border};border-radius:16px;
-                            padding:22px;margin-bottom:20px;">
+                            padding:22px;margin-bottom:16px;">
                     <div style="font-size:11px;font-weight:600;color:{muted};letter-spacing:1.2px;
                                 text-transform:uppercase;margin-bottom:14px;">Classification Result</div>
                     <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
@@ -569,9 +545,7 @@ with main:
                         <div>
                             <div style="font-size:26px;font-weight:600;color:{text};
                                         letter-spacing:-0.5px;text-transform:capitalize;">{pred_cls}</div>
-                            <div style="font-size:12px;color:{muted};margin-top:2px;">
-                                Detected material type
-                            </div>
+                            <div style="font-size:12px;color:{muted};margin-top:2px;">Detected material type</div>
                         </div>
                         <div style="margin-left:auto;text-align:right;">
                             <div style="font-size:28px;font-weight:600;color:{accent};
@@ -592,7 +566,7 @@ with main:
                     bar_w  = f"{prob*100:.1f}"
                     st.markdown(f"""
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                        <span style="width:76px;font-size:12px;color:{'#fff' if is_top else muted};
+                        <span style="width:76px;font-size:12px;color:{''+text+'' if is_top else muted};
                                      font-weight:{'500' if is_top else '400'};
                                      text-transform:capitalize;">{cls}</span>
                         <div style="flex:1;background:{bg3};border-radius:5px;height:5px;overflow:hidden;">
@@ -605,10 +579,10 @@ with main:
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
-                # ── Sorting decision ──
+                # ── Sorting Decision ──
                 st.markdown(f"""
                 <div style="background:{card};border:1px solid {border};border-radius:16px;
-                            padding:22px;margin-bottom:20px;">
+                            padding:22px;margin-bottom:16px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div style="font-size:11px;font-weight:600;color:{muted};letter-spacing:1.2px;
                                     text-transform:uppercase;">Sorting Decision</div>
@@ -616,7 +590,7 @@ with main:
                                     color:{rec_color};font-size:11px;font-weight:500;
                                     padding:3px 10px;border-radius:20px;">{sort['type']}</div>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
                         <div style="background:{bg3};border-radius:12px;padding:14px;">
                             <div style="font-size:10px;color:{muted};text-transform:uppercase;
                                         letter-spacing:0.8px;margin-bottom:5px;">Assigned Bin</div>
@@ -638,24 +612,38 @@ with main:
                             <div style="font-size:12px;font-weight:500;color:{text};">{sort['dest']}</div>
                         </div>
                     </div>
-                    <div style="margin-top:14px;">
-                        <div style="font-size:10px;color:{muted};text-transform:uppercase;
-                                    letter-spacing:0.8px;margin-bottom:8px;">Conveyor Pipeline</div>
-                        <div style="display:flex;gap:6px;">
+
+                    <div style="font-size:10px;color:{muted};text-transform:uppercase;
+                                letter-spacing:0.8px;margin-bottom:10px;">Conveyor Pipeline</div>
+                    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
                 """, unsafe_allow_html=True)
 
-                all_lanes = ['Lane 1','Lane 2','Lane 3','Lane 4','Lane 5']
-                for ln in all_lanes:
-                    is_active = sort['lane'] == ln
+                for lane_key, lane_data in LANE_INFO.items():
+                    is_active = sort['lane'] == lane_key
+                    lane_color = SORTING[lane_data['classes'][0]]['color']
+                    if is_active:
+                        box_bg     = lane_color
+                        box_border = lane_color
+                        label_col  = '#ffffff'
+                        items_col  = 'rgba(255,255,255,0.75)'
+                        badge      = f'<div style="font-size:9px;font-weight:700;color:#fff;background:rgba(255,255,255,0.25);border-radius:4px;padding:1px 6px;margin-bottom:4px;letter-spacing:0.5px;">ACTIVE</div>'
+                    else:
+                        box_bg     = bg3
+                        box_border = border
+                        label_col  = muted
+                        items_col  = 'rgba(122,128,153,0.6)' if theme=='dark' else 'rgba(107,114,128,0.6)'
+                        badge      = ''
+
                     st.markdown(f"""
-                    <div style="flex:1;padding:7px 4px;border-radius:8px;text-align:center;
-                                font-size:11px;font-weight:{'600' if is_active else '400'};
-                                background:{''+accent+'' if is_active else bg3};
-                                color:{'#000' if is_active else muted};
-                                transition:all 0.2s;">{ln}</div>
+                    <div style="background:{box_bg};border:1px solid {box_border};border-radius:12px;
+                                padding:12px 10px;text-align:center;">
+                        {badge}
+                        <div style="font-size:12px;font-weight:600;color:{label_col};margin-bottom:3px;">{lane_key}</div>
+                        <div style="font-size:10px;color:{items_col};line-height:1.3;">{lane_data['items']}</div>
+                    </div>
                     """, unsafe_allow_html=True)
 
-                st.markdown("</div></div></div>", unsafe_allow_html=True)
+                st.markdown("</div></div>", unsafe_allow_html=True)
 
                 # ── Grad-CAM ──
                 st.markdown(f"""
@@ -689,10 +677,9 @@ with main:
                 st.markdown("</div>", unsafe_allow_html=True)
 
             elif not uploaded:
-                # Empty state
                 st.markdown(f"""
                 <div style="background:{card};border:1px solid {border};border-radius:16px;
-                            padding:60px 32px;text-align:center;height:100%;">
+                            padding:60px 32px;text-align:center;">
                     <div style="font-size:48px;margin-bottom:16px;opacity:0.4;">🔍</div>
                     <div style="font-size:16px;font-weight:500;color:{text};margin-bottom:8px;">
                         No image uploaded yet
