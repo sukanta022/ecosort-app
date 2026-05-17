@@ -252,12 +252,12 @@ st.markdown("""
         Intelligent Waste Classification &amp; Automated Sorting System
     </div>
     <div class="eco-pills">
-        <span class="eco-pill">Cardboard</span>
-        <span class="eco-pill">Glass</span>
-        <span class="eco-pill">Metal</span>
-        <span class="eco-pill">Paper</span>
-        <span class="eco-pill">Plastic</span>
-        <span class="eco-pill">Trash</span>
+        <span class="eco-pill">📦 Cardboard</span>
+        <span class="eco-pill">🫙 Glass</span>
+        <span class="eco-pill">🔩 Metal</span>
+        <span class="eco-pill">📄 Paper</span>
+        <span class="eco-pill">🧴 Plastic</span>
+        <span class="eco-pill">🗑️ Trash</span>
     </div>
     <div class="eco-stats">
         <div>
@@ -301,8 +301,8 @@ if uploaded_file:
 
     # ── Section 1: Classification Result ──
     st.markdown("""
-    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
-                text-transform:uppercase;margin:28px 0 14px;'>
+    <div style='font-size:18px;font-weight:700;color:#81c784;letter-spacing:-0.3px;
+                margin:28px 0 14px;'>
         Classification Result
     </div>
     """, unsafe_allow_html=True)
@@ -376,8 +376,8 @@ if uploaded_file:
     # ── Section 2: Sorting Decision ──
     st.markdown("""
     <div style='height:1px;background:rgba(255,255,255,0.06);margin:28px 0 24px;'></div>
-    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
-                text-transform:uppercase;margin-bottom:6px;'>
+    <div style='font-size:18px;font-weight:700;color:#81c784;letter-spacing:-0.3px;
+                margin-bottom:6px;'>
         Automated Sorting Decision
     </div>
     <div style='font-size:13px;color:#555;margin-bottom:20px;'>
@@ -457,8 +457,8 @@ if uploaded_file:
     # ── Section 3: Grad-CAM ──
     st.markdown("""
     <div style='height:1px;background:rgba(255,255,255,0.06);margin:28px 0 24px;'></div>
-    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
-                text-transform:uppercase;margin-bottom:6px;'>
+    <div style='font-size:18px;font-weight:700;color:#81c784;letter-spacing:-0.3px;
+                margin-bottom:6px;'>
         Grad-CAM Explainability
     </div>
     <div style='font-size:13px;color:#555;margin-bottom:20px;'>
