@@ -131,15 +131,154 @@ with st.sidebar:
 
 # ── Main UI ──
 st.markdown("""
-<h1 style='text-align:center;color:#2E7D32;font-size:2.2rem;margin-bottom:0;'>
-    Eco-Sort
-</h1>
-<p style='text-align:center;color:#555;font-size:1rem;margin-top:4px;'>
-    Intelligent Waste Classification &amp; Automated Sorting System
-</p>
-""", unsafe_allow_html=True)
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
 
-st.divider()
+.eco-hero {
+    background: linear-gradient(135deg, #0a1a0d 0%, #0d1f10 40%, #112614 100%);
+    border: 1px solid rgba(46,125,50,0.3);
+    border-radius: 20px;
+    padding: 44px 40px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.eco-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(46,125,50,0.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+.eco-hero::after {
+    content: '♻';
+    position: absolute;
+    right: 36px; top: 50%; transform: translateY(-50%);
+    font-size: 100px;
+    opacity: 0.05;
+    pointer-events: none;
+    line-height: 1;
+}
+.eco-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(46,125,50,0.15);
+    border: 1px solid rgba(46,125,50,0.4);
+    border-radius: 30px;
+    padding: 5px 16px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #66bb6a;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.eco-badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 8px #4caf5099;
+    display: inline-block;
+}
+.eco-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 3.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #81c784 0%, #4caf50 40%, #2E7D32 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+.eco-subtitle {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    color: #6b7a6b;
+    letter-spacing: 0.2px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+.eco-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.eco-pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #8a9e8a;
+    font-family: 'Sora', sans-serif;
+}
+.eco-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(46,125,50,0.15);
+}
+.eco-stat-val {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #81c784;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.eco-stat-lbl {
+    font-size: 11px;
+    color: #4a5e4a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+</style>
+
+<div class="eco-hero">
+    <div class="eco-badge">
+        <span class="eco-badge-dot"></span>
+        AI-Powered · Deep Learning
+    </div>
+    <div class="eco-title">Eco-Sort</div>
+    <div class="eco-subtitle">
+        Intelligent Waste Classification &amp; Automated Sorting System
+    </div>
+    <div class="eco-pills">
+        <span class="eco-pill">📦 Cardboard</span>
+        <span class="eco-pill">🫙 Glass</span>
+        <span class="eco-pill">🔩 Metal</span>
+        <span class="eco-pill">📄 Paper</span>
+        <span class="eco-pill">🧴 Plastic</span>
+        <span class="eco-pill">🗑️ Trash</span>
+    </div>
+    <div class="eco-stats">
+        <div>
+            <div class="eco-stat-val">86.77%</div>
+            <div class="eco-stat-lbl">Accuracy</div>
+        </div>
+        <div>
+            <div class="eco-stat-val">6</div>
+            <div class="eco-stat-lbl">Classes</div>
+        </div>
+        <div>
+            <div class="eco-stat-val">0.85</div>
+            <div class="eco-stat-lbl">F1-Score</div>
+        </div>
+        <div>
+            <div class="eco-stat-val">5</div>
+            <div class="eco-stat-lbl">Sort Lanes</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 with st.spinner("Initializing models..."):
     pred_session, gradcam_session = load_models()
