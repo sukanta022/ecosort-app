@@ -252,12 +252,12 @@ st.markdown("""
         Intelligent Waste Classification &amp; Automated Sorting System
     </div>
     <div class="eco-pills">
-        <span class="eco-pill">📦 Cardboard</span>
-        <span class="eco-pill">🫙 Glass</span>
-        <span class="eco-pill">🔩 Metal</span>
-        <span class="eco-pill">📄 Paper</span>
-        <span class="eco-pill">🧴 Plastic</span>
-        <span class="eco-pill">🗑️ Trash</span>
+        <span class="eco-pill">Cardboard</span>
+        <span class="eco-pill">Glass</span>
+        <span class="eco-pill">Metal</span>
+        <span class="eco-pill">Paper</span>
+        <span class="eco-pill">Plastic</span>
+        <span class="eco-pill">Trash</span>
     </div>
     <div class="eco-stats">
         <div>
@@ -299,113 +299,189 @@ if uploaded_file:
 
     sort_info = SORTING_FRAMEWORK[pred_class]
 
-    # ── Classification Result ──
-    st.markdown("### Classification Result")
-    col1, col2 = st.columns(2)
+    # ── Section 1: Classification Result ──
+    st.markdown("""
+    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
+                text-transform:uppercase;margin:28px 0 14px;'>
+        Classification Result
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.markdown("**Input Image**")
+        st.markdown("""
+        <div style='font-size:11px;font-weight:600;color:#555;letter-spacing:1.2px;
+                    text-transform:uppercase;margin-bottom:10px;'>Input Image</div>
+        """, unsafe_allow_html=True)
         st.image(img, use_container_width=True)
 
     with col2:
-        st.markdown("**Prediction**")
         st.markdown(f"""
-        <div style='background:#1e1e2e;padding:24px;border-radius:10px;
-                    border-left:5px solid {sort_info["color"]};margin-bottom:16px;'>
-            <div style='color:#aaa;font-size:0.8rem;text-transform:uppercase;
-                        letter-spacing:1px;'>Detected Material</div>
-            <div style='color:#fff;font-size:2rem;font-weight:700;
-                        margin:6px 0;'>{pred_class.upper()}</div>
-            <div style='color:#aaa;font-size:0.9rem;'>Confidence:
-                <span style='color:#a6e3a1;font-weight:600;'>{confidence:.1f}%</span>
+        <div style='font-size:11px;font-weight:600;color:#555;letter-spacing:1.2px;
+                    text-transform:uppercase;margin-bottom:10px;'>Prediction</div>
+        <div style='background:linear-gradient(135deg,#141420 0%,#1a1a2e 100%);
+                    padding:26px 28px;border-radius:14px;
+                    border-left:4px solid {sort_info["color"]};
+                    border:1px solid rgba(255,255,255,0.06);
+                    border-left:4px solid {sort_info["color"]};
+                    margin-bottom:18px;position:relative;overflow:hidden;'>
+            <div style='position:absolute;top:-20px;right:-20px;width:100px;height:100px;
+                        background:radial-gradient(circle,{sort_info["color"]}22 0%,transparent 70%);
+                        pointer-events:none;'></div>
+            <div style='font-size:10px;font-weight:600;color:#555;letter-spacing:2px;
+                        text-transform:uppercase;margin-bottom:8px;'>Detected Material</div>
+            <div style='font-size:2.4rem;font-weight:800;color:#fff;
+                        letter-spacing:-1px;line-height:1;margin-bottom:10px;'>
+                {pred_class.upper()}
             </div>
+            <div style='display:flex;align-items:center;gap:10px;'>
+                <div style='flex:1;background:rgba(255,255,255,0.06);border-radius:6px;height:6px;overflow:hidden;'>
+                    <div style='width:{confidence:.1f}%;height:100%;
+                                background:linear-gradient(90deg,{sort_info["color"]},{sort_info["color"]}aa);
+                                border-radius:6px;'></div>
+                </div>
+                <span style='font-size:1rem;font-weight:700;color:#a6e3a1;
+                             white-space:nowrap;'>{confidence:.1f}%</span>
+            </div>
+            <div style='font-size:11px;color:#555;margin-top:6px;'>Model confidence</div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("**Class Probability Distribution**")
+        st.markdown("""
+        <div style='font-size:10px;font-weight:600;color:#555;letter-spacing:2px;
+                    text-transform:uppercase;margin-bottom:12px;'>
+            Probability Distribution
+        </div>
+        """, unsafe_allow_html=True)
+
         for cls, prob in sorted(zip(CLASS_NAMES, probs), key=lambda x: x[1], reverse=True):
-            bar_color = sort_info["color"] if cls == pred_class else "#444"
+            is_top    = cls == pred_class
+            bar_color = sort_info["color"] if is_top else "#2a2a3e"
+            txt_color = "#fff" if is_top else "#666"
             st.markdown(f"""
-            <div style='display:flex;align-items:center;margin:5px 0;gap:10px;'>
-                <span style='width:85px;font-size:12px;color:#ccc;'>{cls}</span>
-                <div style='flex:1;background:#2a2a3e;border-radius:4px;height:16px;'>
-                    <div style='width:{prob*100:.1f}%;background:{bar_color};
-                                height:16px;border-radius:4px;'></div>
+            <div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'>
+                <span style='width:80px;font-size:12px;color:{txt_color};
+                             font-weight:{"600" if is_top else "400"};
+                             text-transform:capitalize;'>{cls}</span>
+                <div style='flex:1;background:#1a1a2a;border-radius:5px;height:8px;overflow:hidden;'>
+                    <div style='width:{prob*100:.1f}%;height:100%;background:{bar_color};
+                                border-radius:5px;'></div>
                 </div>
-                <span style='width:44px;font-size:12px;color:#ccc;
-                             text-align:right;'>{prob*100:.1f}%</span>
+                <span style='width:40px;font-size:11px;color:#666;
+                             text-align:right;font-family:monospace;'>{prob*100:.1f}%</span>
             </div>
             """, unsafe_allow_html=True)
 
-    st.divider()
+    # ── Section 2: Sorting Decision ──
+    st.markdown("""
+    <div style='height:1px;background:rgba(255,255,255,0.06);margin:28px 0 24px;'></div>
+    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
+                text-transform:uppercase;margin-bottom:6px;'>
+        Automated Sorting Decision
+    </div>
+    <div style='font-size:13px;color:#555;margin-bottom:20px;'>
+        The sorting controller routes this item through the appropriate processing pipeline.
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── Sorting Decision ──
-    st.markdown("### Automated Sorting Decision")
-    st.markdown(
-        "Based on the classification result, the sorting controller routes "
-        "the item through the appropriate processing pipeline:"
-    )
-
-    c1, c2, c3, c4 = st.columns(4)
-    for col, label, value in zip(
-        [c1, c2, c3, c4],
-        ['Assigned Bin', 'Conveyor Lane', 'Processing Action', 'Destination'],
-        [sort_info["bin"], sort_info["conveyor"], sort_info["action"], sort_info["destination"]]
-    ):
+    c1, c2, c3, c4 = st.columns(4, gap="medium")
+    cards = [
+        ('Assigned Bin',      sort_info["bin"]),
+        ('Conveyor Lane',     sort_info["conveyor"]),
+        ('Processing Action', sort_info["action"]),
+        ('Destination',       sort_info["destination"]),
+    ]
+    for col, (label, value) in zip([c1, c2, c3, c4], cards):
         with col:
-            extra = f"<div style='color:#aaa;font-size:12px;margin-top:4px;'>Category: {sort_info['category']}</div>" if label == 'Conveyor Lane' else ""
+            extra = f"<div style='font-size:11px;color:#666;margin-top:5px;'>Category: {sort_info['category']}</div>" if label == 'Conveyor Lane' else ""
             st.markdown(f"""
-            <div style='background:#1e1e2e;padding:16px;border-radius:8px;
-                        border-top:3px solid {sort_info["color"]};min-height:110px;'>
-                <div style='color:#888;font-size:11px;text-transform:uppercase;
-                            letter-spacing:1px;'>{label}</div>
-                <div style='color:#fff;font-size:14px;font-weight:600;
-                            margin-top:8px;'>{value}</div>
+            <div style='background:linear-gradient(160deg,#141420,#1a1a2e);
+                        border:1px solid rgba(255,255,255,0.06);
+                        border-top:3px solid {sort_info["color"]};
+                        border-radius:14px;padding:18px 16px;min-height:110px;'>
+                <div style='font-size:10px;font-weight:600;color:#555;letter-spacing:1.5px;
+                            text-transform:uppercase;margin-bottom:10px;'>{label}</div>
+                <div style='font-size:14px;font-weight:600;color:#e0e0e0;
+                            line-height:1.4;'>{value}</div>
                 {extra}
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("**Sorting Pipeline — Active Route**")
+    # ── Pipeline lanes ──
+    st.markdown("""
+    <div style='font-size:10px;font-weight:600;color:#555;letter-spacing:2px;
+                text-transform:uppercase;margin:22px 0 14px;'>
+        Sorting Pipeline — Active Route
+    </div>
+    """, unsafe_allow_html=True)
 
-    lane_cols = st.columns(5)
     all_lanes = {
-        'Lane 1': ['cardboard', 'paper'],
-        'Lane 2': ['glass'],
-        'Lane 3': ['metal'],
-        'Lane 4': ['plastic'],
-        'Lane 5': ['trash'],
+        'Lane 1': ['Cardboard', 'Paper'],
+        'Lane 2': ['Glass'],
+        'Lane 3': ['Metal'],
+        'Lane 4': ['Plastic'],
+        'Lane 5': ['Trash'],
     }
+    lane_cols = st.columns(5, gap="small")
     for idx, (lane, materials) in enumerate(all_lanes.items()):
         is_active = sort_info['conveyor'] == lane
         with lane_cols[idx]:
+            if is_active:
+                st.markdown(f"""
+                <div style='background:linear-gradient(160deg,{sort_info["color"]}22,{sort_info["color"]}11);
+                            border:1.5px solid {sort_info["color"]};border-radius:12px;
+                            padding:16px 10px;text-align:center;'>
+                    <div style='width:8px;height:8px;border-radius:50%;background:{sort_info["color"]};
+                                margin:0 auto 10px;box-shadow:0 0 10px {sort_info["color"]}88;'></div>
+                    <div style='font-size:12px;font-weight:700;color:#fff;margin-bottom:5px;'>{lane}</div>
+                    <div style='font-size:11px;color:#aaa;margin-bottom:8px;line-height:1.4;'>
+                        {" / ".join(materials)}</div>
+                    <div style='background:{sort_info["color"]};color:#fff;font-size:10px;
+                                font-weight:700;padding:3px 10px;border-radius:10px;
+                                display:inline-block;letter-spacing:0.5px;'>ACTIVE</div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style='background:#141420;border:1px solid rgba(255,255,255,0.05);
+                            border-radius:12px;padding:16px 10px;text-align:center;opacity:0.55;'>
+                    <div style='width:7px;height:7px;border-radius:50%;background:#333;
+                                margin:0 auto 10px;'></div>
+                    <div style='font-size:12px;font-weight:500;color:#555;margin-bottom:5px;'>{lane}</div>
+                    <div style='font-size:11px;color:#444;line-height:1.4;'>
+                        {" / ".join(materials)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+    # ── Section 3: Grad-CAM ──
+    st.markdown("""
+    <div style='height:1px;background:rgba(255,255,255,0.06);margin:28px 0 24px;'></div>
+    <div style='font-size:11px;font-weight:600;color:#4a7a4a;letter-spacing:2px;
+                text-transform:uppercase;margin-bottom:6px;'>
+        Grad-CAM Explainability
+    </div>
+    <div style='font-size:13px;color:#555;margin-bottom:20px;'>
+        Spatial regions that most influenced the model's classification decision.
+        Warmer colours indicate higher model attention.
+    </div>
+    """, unsafe_allow_html=True)
+
+    g1, g2, g3 = st.columns(3, gap="medium")
+    for col, label, src in zip(
+        [g1, g2, g3],
+        ['Original Input', 'Activation Heatmap', 'Overlay'],
+        [None, None, None]
+    ):
+        with col:
             st.markdown(f"""
-            <div style='background:{sort_info["color"] if is_active else "#2a2a3e"};
-                        border:2px solid {sort_info["color"] if is_active else "#333"};
-                        border-radius:8px;padding:12px;text-align:center;'>
-                <div style='color:{"#fff" if is_active else "#555"};font-size:11px;
-                            font-weight:600;'>{lane}</div>
-                <div style='color:{"#fff" if is_active else "#555"};font-size:10px;
-                            margin-top:4px;'>{" / ".join(m.capitalize() for m in materials)}</div>
-                {'<div style="color:#fff;font-size:10px;margin-top:6px;font-weight:700;">ACTIVE</div>' if is_active else ''}
-            </div>
+            <div style='font-size:10px;font-weight:600;color:#555;letter-spacing:1.5px;
+                        text-transform:uppercase;margin-bottom:10px;'>{label}</div>
             """, unsafe_allow_html=True)
 
-    st.divider()
-
-    # ── Grad-CAM ──
-    st.markdown("### Grad-CAM Explainability")
-    st.markdown(
-        "The heatmap highlights the spatial regions of the input image "
-        "that most influenced the model's classification decision."
-    )
-
-    g1, g2, g3 = st.columns(3)
     with g1:
-        st.markdown("**Original Input**")
         st.image(np.array(img.resize((224, 224))), use_container_width=True)
     with g2:
-        st.markdown("**Activation Heatmap**")
         fig, ax = plt.subplots(figsize=(3, 3))
         ax.imshow(heat_resized, cmap='jet')
         ax.axis('off')
@@ -415,17 +491,34 @@ if uploaded_file:
         st.image(buf, use_container_width=True)
         plt.close()
     with g3:
-        st.markdown("**Overlay**")
         st.image(overlay, use_container_width=True)
 
 else:
-    st.info("Upload a waste image above to begin classification and sorting.")
-    st.markdown("**Supported waste categories:** Cardboard · Glass · Metal · Paper · Plastic · Trash")
-    st.divider()
-    st.markdown("**System Overview**")
     st.markdown("""
-    Eco-Sort combines a deep learning classifier (MobileNetV2, 86.77% accuracy) with an
-    automated sorting framework. Each classified item is assigned to a specific conveyor lane,
-    processing action, and destination facility — simulating a real-world intelligent waste
-    management pipeline. Grad-CAM visualization provides explainability for each decision.
-    """)
+    <div style='background:linear-gradient(135deg,#0a1a0d,#111820);
+                border:1px solid rgba(46,125,50,0.15);border-radius:16px;
+                padding:48px 32px;text-align:center;margin-top:8px;'>
+        <div style='font-size:14px;font-weight:600;color:#4a6a4a;
+                    letter-spacing:1px;margin-bottom:10px;'>
+            Ready to classify
+        </div>
+        <div style='font-size:13px;color:#444;line-height:1.8;max-width:480px;margin:0 auto;'>
+            Upload a waste image above to receive an AI-powered classification,
+            automated sorting decision, and Grad-CAM visual explanation.
+        </div>
+        <div style='margin-top:24px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;'>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Cardboard</span>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Glass</span>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Metal</span>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Paper</span>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Plastic</span>
+            <span style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                         border-radius:20px;padding:5px 16px;font-size:12px;color:#555;'>Trash</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
