@@ -13,29 +13,25 @@ st.set_page_config(
     layout="wide"
 )
 
-# ── Hide Streamlit chrome ──
 st.markdown("""
 <style>
 #MainMenu, footer, header { visibility: hidden; }
-[data-testid="stToolbar"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Constants ──
 CLASS_NAMES  = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
 PREDICT_PATH = 'model/ecosort_model.onnx'
 GRADCAM_PATH = 'model/ecosort_gradcam.onnx'
 
 SORTING_FRAMEWORK = {
-    'cardboard': {'bin':'Bin A — Dry Recyclables',      'category':'Recyclable',     'conveyor':'Lane 1', 'action':'Flatten & Compress',        'destination':'Paper Recycling Facility',       'color':'#8B6914'},
-    'glass':     {'bin':'Bin B — Fragile Recyclables',  'category':'Recyclable',     'conveyor':'Lane 2', 'action':'Separate by Color & Crush',  'destination':'Glass Processing Plant',         'color':'#1565C0'},
-    'metal':     {'bin':'Bin C — Metal Recyclables',    'category':'Recyclable',     'conveyor':'Lane 3', 'action':'Magnetic Separation & Bale', 'destination':'Metal Scrap Facility',           'color':'#37474F'},
-    'paper':     {'bin':'Bin D — Dry Recyclables',      'category':'Recyclable',     'conveyor':'Lane 1', 'action':'Stack & Bundle',             'destination':'Paper Recycling Facility',       'color':'#2E7D32'},
-    'plastic':   {'bin':'Bin E — Plastic Recyclables',  'category':'Recyclable',     'conveyor':'Lane 4', 'action':'Shred & Pelletize',          'destination':'Plastic Recycling Plant',        'color':'#F57F17'},
-    'trash':     {'bin':'Bin F — General Waste',        'category':'Non-Recyclable', 'conveyor':'Lane 5', 'action':'Compact & Seal',             'destination':'Controlled Landfill / Incineration', 'color':'#B71C1C'},
+    'cardboard': {'bin':'Bin A — Dry Recyclables',     'category':'Recyclable',     'conveyor':'Lane 1', 'action':'Flatten & Compress',        'destination':'Paper Recycling Facility',           'color':'#8B6914'},
+    'glass':     {'bin':'Bin B — Fragile Recyclables', 'category':'Recyclable',     'conveyor':'Lane 2', 'action':'Separate by Color & Crush',  'destination':'Glass Processing Plant',             'color':'#1565C0'},
+    'metal':     {'bin':'Bin C — Metal Recyclables',   'category':'Recyclable',     'conveyor':'Lane 3', 'action':'Magnetic Separation & Bale', 'destination':'Metal Scrap Facility',               'color':'#37474F'},
+    'paper':     {'bin':'Bin D — Dry Recyclables',     'category':'Recyclable',     'conveyor':'Lane 1', 'action':'Stack & Bundle',             'destination':'Paper Recycling Facility',           'color':'#2E7D32'},
+    'plastic':   {'bin':'Bin E — Plastic Recyclables', 'category':'Recyclable',     'conveyor':'Lane 4', 'action':'Shred & Pelletize',          'destination':'Plastic Recycling Plant',            'color':'#F57F17'},
+    'trash':     {'bin':'Bin F — General Waste',       'category':'Non-Recyclable', 'conveyor':'Lane 5', 'action':'Compact & Seal',             'destination':'Controlled Landfill / Incineration', 'color':'#B71C1C'},
 }
 
-# ── Model functions ──
 @st.cache_resource
 def load_models():
     return ort.InferenceSession(PREDICT_PATH), ort.InferenceSession(GRADCAM_PATH)
@@ -72,23 +68,19 @@ def overlay_heatmap(img, heatmap):
     heat_resized = cv2.resize(heatmap, (224, 224))
     heat_colored = cv2.applyColorMap(np.uint8(255 * heat_resized), cv2.COLORMAP_JET)
     heat_colored = cv2.cvtColor(heat_colored, cv2.COLOR_BGR2RGB)
-    overlay      = cv2.addWeighted(orig, 0.6, heat_colored, 0.4, 0)
-    return heat_resized, overlay
+    return heat_resized, cv2.addWeighted(orig, 0.6, heat_colored, 0.4, 0)
 
-# ══════════════════════════════════════════════════════════════
-#                        SIDEBAR
-# ══════════════════════════════════════════════════════════════
+# ── Sidebar ──
 with st.sidebar:
     st.markdown("""
-    <div style='padding: 8px 0 16px 0;'>
-        <div style='display:flex; align-items:center; gap:10px; margin-bottom:6px;'>
-            <div style='background:#2E7D32; width:36px; height:36px; border-radius:10px;
-                        display:flex; align-items:center; justify-content:center;
-                        font-size:20px; flex-shrink:0;'>♻</div>
+    <div style='padding:8px 4px 20px;'>
+        <div style='display:flex;align-items:center;gap:10px;'>
+            <div style='background:#2E7D32;width:38px;height:38px;border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:20px;flex-shrink:0;'>♻</div>
             <div>
-                <div style='font-size:17px; font-weight:700; color:#fff;
-                            line-height:1.2;'>Eco-Sort</div>
-                <div style='font-size:11px; color:#888;'>Smart Waste AI</div>
+                <div style='font-size:17px;font-weight:700;color:#ffffff;'>Eco-Sort</div>
+                <div style='font-size:11px;color:#888;'>Smart Waste AI · v1.0</div>
             </div>
         </div>
     </div>
@@ -96,117 +88,62 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("**Navigation**")
     st.markdown("""
-    <div style='background:#1e1e2e; border-left:3px solid #2E7D32;
-                border-radius:6px; padding:10px 14px; margin-bottom:6px;'>
-        <span style='color:#fff; font-size:13.5px; font-weight:600;'>Home</span>
+    <div style='font-size:10px;font-weight:600;color:#666;letter-spacing:1.5px;
+                text-transform:uppercase;margin-bottom:10px;'>Navigation</div>
+    <div style='background:#1e2a1e;border-left:3px solid #2E7D32;border-radius:6px;
+                padding:10px 14px;margin-bottom:4px;'>
+        <span style='color:#a6e3a1;font-size:13.5px;font-weight:600;'>Home</span>
     </div>
-    <div style='padding:10px 14px; margin-bottom:6px;'>
-        <span style='color:#888; font-size:13.5px;'>Waste Identification</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    st.markdown("**System Status**")
-    st.markdown("""
-    <div style='margin-bottom:8px;'>
-        <div style='display:flex; align-items:center; gap:8px; margin-bottom:8px;'>
-            <div style='width:8px; height:8px; border-radius:50%; background:#2E7D32;
-                        box-shadow:0 0 6px #2E7D3299; flex-shrink:0;'></div>
-            <span style='font-size:12.5px; color:#ccc;'>Model loaded</span>
-        </div>
-        <div style='display:flex; align-items:center; gap:8px; margin-bottom:8px;'>
-            <div style='width:8px; height:8px; border-radius:50%; background:#2E7D32;
-                        box-shadow:0 0 6px #2E7D3299; flex-shrink:0;'></div>
-            <span style='font-size:12.5px; color:#ccc;'>MobileNetV2 ready</span>
-        </div>
-        <div style='display:flex; align-items:center; gap:8px;'>
-            <div style='width:8px; height:8px; border-radius:50%; background:#2E7D32;
-                        box-shadow:0 0 6px #2E7D3299; flex-shrink:0;'></div>
-            <span style='font-size:12.5px; color:#ccc;'>Grad-CAM active</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    st.markdown("**Model Info**")
-    st.markdown("""
-    <div style='font-size:12px; color:#888; line-height:2;'>
-        Architecture: <span style='color:#ccc;'>MobileNetV2</span><br>
-        Accuracy: <span style='color:#a6e3a1; font-weight:600;'>86.77%</span><br>
-        Classes: <span style='color:#ccc;'>6</span><br>
-        Explainability: <span style='color:#ccc;'>Grad-CAM</span>
+    <div style='padding:10px 14px;border-radius:6px;'>
+        <span style='color:#666;font-size:13.5px;'>Waste Identification</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
 
     st.markdown("""
-    <div style='font-size:11px; color:#555; line-height:1.6;'>
-        Eco-Sort v1.0<br>
-        Deep Learning Waste Classification<br>
-        &amp; Automated Sorting System
+    <div style='font-size:10px;font-weight:600;color:#666;letter-spacing:1.5px;
+                text-transform:uppercase;margin-bottom:12px;'>System Status</div>
+    """, unsafe_allow_html=True)
+
+    for label in ['Model loaded', 'MobileNetV2 ready', 'Grad-CAM active']:
+        st.markdown(f"""
+        <div style='display:flex;align-items:center;gap:10px;margin-bottom:10px;'>
+            <div style='width:8px;height:8px;border-radius:50%;background:#2E7D32;
+                        box-shadow:0 0 6px #2E7D3299;flex-shrink:0;'></div>
+            <span style='font-size:12.5px;color:#ccc;'>{label}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.divider()
+
+    st.markdown("""
+    <div style='font-size:10px;font-weight:600;color:#666;letter-spacing:1.5px;
+                text-transform:uppercase;margin-bottom:12px;'>Model Info</div>
+    <div style='font-size:12.5px;color:#888;line-height:2.1;'>
+        Architecture&nbsp;&nbsp;<span style='color:#ccc;'>MobileNetV2</span><br>
+        Accuracy&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#a6e3a1;font-weight:600;'>86.77%</span><br>
+        Classes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#ccc;'>6</span><br>
+        Explainability&nbsp;<span style='color:#ccc;'>Grad-CAM</span>
     </div>
     """, unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════
-#                       MAIN CONTENT
-# ══════════════════════════════════════════════════════════════
-
-# ── Header ──
+# ── Main UI ──
 st.markdown("""
-<h1 style='text-align:center; color:#2E7D32; font-size:2.2rem; margin-bottom:0;'>
+<h1 style='text-align:center;color:#2E7D32;font-size:2.2rem;margin-bottom:0;'>
     Eco-Sort
 </h1>
-<p style='text-align:center; color:#555; font-size:1rem; margin-top:4px;'>
+<p style='text-align:center;color:#555;font-size:1rem;margin-top:4px;'>
     Intelligent Waste Classification &amp; Automated Sorting System
 </p>
 """, unsafe_allow_html=True)
 
 st.divider()
 
-# ── About Section ──
-with st.expander("About this System", expanded=False):
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        st.markdown("""
-        **What is Eco-Sort?**
-
-        Eco-Sort is a deep learning-based waste classification and
-        automated sorting system. It uses MobileNetV2 with Transfer
-        Learning to classify waste images into six categories and
-        assign each item to the appropriate sorting lane.
-        """)
-    with col_b:
-        st.markdown("""
-        **How it works**
-
-        1. Upload a waste image
-        2. MobileNetV2 classifies the material
-        3. Sorting controller assigns bin, lane & action
-        4. Grad-CAM shows which regions drove the decision
-        """)
-    with col_c:
-        st.markdown("""
-        **Supported Categories**
-
-        📦 Cardboard · 🫙 Glass · 🔩 Metal
-        📄 Paper · 🧴 Plastic · 🗑️ Trash
-
-        **Model Performance**
-        Accuracy: **86.77%** · F1-Score: **0.85**
-        """)
-
-st.divider()
-
-# ── Model load ──
 with st.spinner("Initializing models..."):
     pred_session, gradcam_session = load_models()
 
-# ── Upload ──
 uploaded_file = st.file_uploader(
     "Upload a waste image for classification and sorting decision",
     type=['jpg', 'jpeg', 'png']
@@ -223,7 +160,7 @@ if uploaded_file:
 
     sort_info = SORTING_FRAMEWORK[pred_class]
 
-    # ── Section 1: Classification Result ──
+    # ── Classification Result ──
     st.markdown("### Classification Result")
     col1, col2 = st.columns(2)
 
@@ -234,14 +171,14 @@ if uploaded_file:
     with col2:
         st.markdown("**Prediction**")
         st.markdown(f"""
-        <div style='background:#1e1e2e; padding:24px; border-radius:10px;
-                    border-left:5px solid {sort_info["color"]}; margin-bottom:16px;'>
-            <div style='color:#aaa; font-size:0.8rem; text-transform:uppercase;
+        <div style='background:#1e1e2e;padding:24px;border-radius:10px;
+                    border-left:5px solid {sort_info["color"]};margin-bottom:16px;'>
+            <div style='color:#aaa;font-size:0.8rem;text-transform:uppercase;
                         letter-spacing:1px;'>Detected Material</div>
-            <div style='color:#fff; font-size:2rem; font-weight:700;
+            <div style='color:#fff;font-size:2rem;font-weight:700;
                         margin:6px 0;'>{pred_class.upper()}</div>
-            <div style='color:#aaa; font-size:0.9rem;'>Confidence:
-                <span style='color:#a6e3a1; font-weight:600;'>{confidence:.1f}%</span>
+            <div style='color:#aaa;font-size:0.9rem;'>Confidence:
+                <span style='color:#a6e3a1;font-weight:600;'>{confidence:.1f}%</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -250,20 +187,20 @@ if uploaded_file:
         for cls, prob in sorted(zip(CLASS_NAMES, probs), key=lambda x: x[1], reverse=True):
             bar_color = sort_info["color"] if cls == pred_class else "#444"
             st.markdown(f"""
-            <div style='display:flex; align-items:center; margin:5px 0; gap:10px;'>
-                <span style='width:85px; font-size:12px; color:#ccc;'>{cls}</span>
-                <div style='flex:1; background:#2a2a3e; border-radius:4px; height:16px;'>
-                    <div style='width:{prob*100:.1f}%; background:{bar_color};
-                                height:16px; border-radius:4px;'></div>
+            <div style='display:flex;align-items:center;margin:5px 0;gap:10px;'>
+                <span style='width:85px;font-size:12px;color:#ccc;'>{cls}</span>
+                <div style='flex:1;background:#2a2a3e;border-radius:4px;height:16px;'>
+                    <div style='width:{prob*100:.1f}%;background:{bar_color};
+                                height:16px;border-radius:4px;'></div>
                 </div>
-                <span style='width:44px; font-size:12px; color:#ccc;
+                <span style='width:44px;font-size:12px;color:#ccc;
                              text-align:right;'>{prob*100:.1f}%</span>
             </div>
             """, unsafe_allow_html=True)
 
     st.divider()
 
-    # ── Section 2: Sorting Decision ──
+    # ── Sorting Decision ──
     st.markdown("### Automated Sorting Decision")
     st.markdown(
         "Based on the classification result, the sorting controller routes "
@@ -271,57 +208,28 @@ if uploaded_file:
     )
 
     c1, c2, c3, c4 = st.columns(4)
+    for col, label, value in zip(
+        [c1, c2, c3, c4],
+        ['Assigned Bin', 'Conveyor Lane', 'Processing Action', 'Destination'],
+        [sort_info["bin"], sort_info["conveyor"], sort_info["action"], sort_info["destination"]]
+    ):
+        with col:
+            extra = f"<div style='color:#aaa;font-size:12px;margin-top:4px;'>Category: {sort_info['category']}</div>" if label == 'Conveyor Lane' else ""
+            st.markdown(f"""
+            <div style='background:#1e1e2e;padding:16px;border-radius:8px;
+                        border-top:3px solid {sort_info["color"]};min-height:110px;'>
+                <div style='color:#888;font-size:11px;text-transform:uppercase;
+                            letter-spacing:1px;'>{label}</div>
+                <div style='color:#fff;font-size:14px;font-weight:600;
+                            margin-top:8px;'>{value}</div>
+                {extra}
+            </div>
+            """, unsafe_allow_html=True)
 
-    with c1:
-        st.markdown(f"""
-        <div style='background:#1e1e2e; padding:16px; border-radius:8px;
-                    border-top:3px solid {sort_info["color"]}; height:120px;'>
-            <div style='color:#888; font-size:11px; text-transform:uppercase;
-                        letter-spacing:1px;'>Assigned Bin</div>
-            <div style='color:#fff; font-size:14px; font-weight:600;
-                        margin-top:8px;'>{sort_info["bin"]}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with c2:
-        st.markdown(f"""
-        <div style='background:#1e1e2e; padding:16px; border-radius:8px;
-                    border-top:3px solid {sort_info["color"]}; height:120px;'>
-            <div style='color:#888; font-size:11px; text-transform:uppercase;
-                        letter-spacing:1px;'>Conveyor Lane</div>
-            <div style='color:#fff; font-size:14px; font-weight:600;
-                        margin-top:8px;'>{sort_info["conveyor"]}</div>
-            <div style='color:#aaa; font-size:12px;
-                        margin-top:4px;'>Category: {sort_info["category"]}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with c3:
-        st.markdown(f"""
-        <div style='background:#1e1e2e; padding:16px; border-radius:8px;
-                    border-top:3px solid {sort_info["color"]}; height:120px;'>
-            <div style='color:#888; font-size:11px; text-transform:uppercase;
-                        letter-spacing:1px;'>Processing Action</div>
-            <div style='color:#fff; font-size:14px; font-weight:600;
-                        margin-top:8px;'>{sort_info["action"]}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with c4:
-        st.markdown(f"""
-        <div style='background:#1e1e2e; padding:16px; border-radius:8px;
-                    border-top:3px solid {sort_info["color"]}; height:120px;'>
-            <div style='color:#888; font-size:11px; text-transform:uppercase;
-                        letter-spacing:1px;'>Destination</div>
-            <div style='color:#fff; font-size:14px; font-weight:600;
-                        margin-top:8px;'>{sort_info["destination"]}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ── Sorting Pipeline ──
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**Sorting Pipeline — Active Route**")
 
+    lane_cols = st.columns(5)
     all_lanes = {
         'Lane 1': ['cardboard', 'paper'],
         'Lane 2': ['glass'],
@@ -329,29 +237,24 @@ if uploaded_file:
         'Lane 4': ['plastic'],
         'Lane 5': ['trash'],
     }
-
-    lane_cols = st.columns(5)
     for idx, (lane, materials) in enumerate(all_lanes.items()):
-        is_active  = sort_info['conveyor'] == lane
-        lane_bg    = sort_info['color'] if is_active else '#2a2a3e'
-        txt_color  = '#fff' if is_active else '#555'
-        lane_brd   = f'2px solid {sort_info["color"]}' if is_active else '2px solid #333'
-
+        is_active = sort_info['conveyor'] == lane
         with lane_cols[idx]:
             st.markdown(f"""
-            <div style='background:{lane_bg}; border:{lane_brd}; border-radius:8px;
-                        padding:12px; text-align:center;'>
-                <div style='color:{txt_color}; font-size:11px; font-weight:600;'>{lane}</div>
-                <div style='color:{txt_color}; font-size:10px; margin-top:4px;'>
-                    {" / ".join(m.capitalize() for m in materials)}
-                </div>
-                {'<div style="color:#fff; font-size:10px; margin-top:6px; font-weight:700;">ACTIVE</div>' if is_active else ''}
+            <div style='background:{sort_info["color"] if is_active else "#2a2a3e"};
+                        border:2px solid {sort_info["color"] if is_active else "#333"};
+                        border-radius:8px;padding:12px;text-align:center;'>
+                <div style='color:{"#fff" if is_active else "#555"};font-size:11px;
+                            font-weight:600;'>{lane}</div>
+                <div style='color:{"#fff" if is_active else "#555"};font-size:10px;
+                            margin-top:4px;'>{" / ".join(m.capitalize() for m in materials)}</div>
+                {'<div style="color:#fff;font-size:10px;margin-top:6px;font-weight:700;">ACTIVE</div>' if is_active else ''}
             </div>
             """, unsafe_allow_html=True)
 
     st.divider()
 
-    # ── Section 3: Grad-CAM ──
+    # ── Grad-CAM ──
     st.markdown("### Grad-CAM Explainability")
     st.markdown(
         "The heatmap highlights the spatial regions of the input image "
@@ -377,9 +280,8 @@ if uploaded_file:
         st.image(overlay, use_container_width=True)
 
 else:
-    # ── Empty state ──
-    st.markdown("Upload a waste image to begin classification and sorting.")
-    st.markdown("**Supported waste categories:** Cardboard, Glass, Metal, Paper, Plastic, Trash")
+    st.info("Upload a waste image above to begin classification and sorting.")
+    st.markdown("**Supported waste categories:** Cardboard · Glass · Metal · Paper · Plastic · Trash")
     st.divider()
     st.markdown("**System Overview**")
     st.markdown("""
