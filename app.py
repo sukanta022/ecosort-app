@@ -252,12 +252,12 @@ st.markdown("""
         Intelligent Waste Classification &amp; Automated Sorting System
     </div>
     <div class="eco-pills">
-        <span class="eco-pill">📦 Cardboard</span>
-        <span class="eco-pill">🫙 Glass</span>
-        <span class="eco-pill">🔩 Metal</span>
-        <span class="eco-pill">📄 Paper</span>
-        <span class="eco-pill">🧴 Plastic</span>
-        <span class="eco-pill">🗑️ Trash</span>
+        <span class="eco-pill">Cardboard</span>
+        <span class="eco-pill">Glass</span>
+        <span class="eco-pill">Metal</span>
+        <span class="eco-pill">Paper</span>
+        <span class="eco-pill">Plastic</span>
+        <span class="eco-pill">Trash</span>
     </div>
     <div class="eco-stats">
         <div>
