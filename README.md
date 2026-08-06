@@ -1,3 +1,13 @@
+<div align="center">
+
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+<img src="https://img.shields.io/badge/TensorFlow-2.15-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
+<img src="https://img.shields.io/badge/Streamlit-Cloud-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"/>
+<img src="https://img.shields.io/badge/ONNX-Runtime-005CED?style=for-the-badge&logo=onnx&logoColor=white"/>
+<img src="https://img.shields.io/badge/MobileNetV2-Transfer_Learning-4CAF50?style=for-the-badge"/>
+
+<br/><br/>
+
 # ♻️ Eco-Sort
 ### Intelligent Waste Classification & Automated Sorting System
 
@@ -9,17 +19,6 @@
 [![GitHub](https://img.shields.io/badge/GitHub-sukanta022/ecosort--app-181717?style=for-the-badge&logo=github)](https://github.com/sukanta022/ecosort-app)
 
 </div>
-
-
-<div align="center">
-
-<img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/TensorFlow-2.15-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
-<img src="https://img.shields.io/badge/Streamlit-Cloud-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"/>
-<img src="https://img.shields.io/badge/ONNX-Runtime-005CED?style=for-the-badge&logo=onnx&logoColor=white"/>
-<img src="https://img.shields.io/badge/MobileNetV2-Transfer_Learning-4CAF50?style=for-the-badge"/>
-
-<br/><br/>
 
 ---
 
@@ -283,6 +282,11 @@ This makes the system suitable for educational demonstrations, research presenta
 - Real-time video stream classification
 
 ---
+
+<div align="center">
+
+**If you found this project useful, please consider giving it a ⭐**
+
 *Built with TensorFlow · Deployed on Streamlit Cloud*
 
 </div>
